@@ -26,7 +26,9 @@ abstract class MainDB: RoomDatabase() {
                 context,
                 MainDB::class.java,
                 "test.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()  // Автоматически сносит базу при изменениях
+                .build()
         }
     }
 

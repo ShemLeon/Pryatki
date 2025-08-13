@@ -10,5 +10,5 @@ data class PersonEntity(
 
     val name: String,
     val count: Int,
-    val image: Int
+    val image:  String = "pikachu.webp"
 )
