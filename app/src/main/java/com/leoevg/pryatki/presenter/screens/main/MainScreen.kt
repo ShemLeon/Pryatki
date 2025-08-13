@@ -1,6 +1,5 @@
 package com.leoevg.pryatki.presenter.screens.main
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,16 +13,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,7 +38,7 @@ import com.leoevg.pryatki.presenter.components.NameInputRow
 @Composable
 fun MainScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
-){
+) {
     val itemsList = mainScreenViewModel.itemsList.collectAsState(initial = emptyList())
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
@@ -52,7 +52,7 @@ fun MainScreen(
             .fillMaxSize()
             .background(brush = gradientBrush)
             .padding(horizontal = 10.dp),
-    ){
+    ) {
         NameInputRow(
             text = mainScreenViewModel.newText.value,
             onTextChange = {
@@ -64,7 +64,6 @@ fun MainScreen(
                 .padding(start = 16.dp, end = 16.dp, top = 100.dp, bottom = 16.dp)
         )
 
-        // Отображение ошибки
         mainScreenViewModel.errorMessage.value?.let { error ->
             Text(
                 text = error,
@@ -81,16 +80,52 @@ fun MainScreen(
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
         ) {
-            items(itemsList.value) { item ->
-                ListItem(
-                    item = item,
-                    onClick = {
-                        mainScreenViewModel.personEntity = it
-                        mainScreenViewModel.newText.value = it.name
+            items(itemsList.value, key = { it.id ?: it.hashCode() }) { item ->
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                            mainScreenViewModel.deleteItem(item)
+                            true
+                        } else false
+                    }
+                )
+
+                val bgAlpha = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+
+                SwipeToDismissBox(
+                    state = dismissState,
+                    enableDismissFromStartToEnd = false,
+                    enableDismissFromEndToStart = true,
+                    backgroundContent = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFFFE5E5).copy(alpha = bgAlpha))
+                                .padding(end = 20.dp),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color.Red,
+                                modifier = Modifier.alpha(bgAlpha)
+                            )
+                        }
                     },
-                    onClickDelete = { mainScreenViewModel.deleteItem(it) },
-                    onClickIncrement = { mainScreenViewModel.incrementCount(it) },
-                    onClickDecrement = { mainScreenViewModel.decrementCount(it) }
+                    content = {
+                        ListItem(
+                            item = item,
+                            onClick = {
+                                mainScreenViewModel.personEntity = it
+                                mainScreenViewModel.newText.value = it.name
+                            },
+                            onClickIncrement = { mainScreenViewModel.incrementCount(it) },
+                            onClickDecrement = { mainScreenViewModel.decrementCount(it) }
+                        )
+                    }
                 )
             }
         }

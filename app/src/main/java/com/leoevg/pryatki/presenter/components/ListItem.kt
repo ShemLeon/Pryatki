@@ -2,22 +2,11 @@ package com.leoevg.pryatki.presenter.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -25,20 +14,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.leoevg.pryatki.R
 import com.leoevg.pryatki.data.PersonEntity
 
 @Composable
 private fun ItemImage(imageName: String) {
-    // Пустой квадрат в превью, AsyncImage в рантайме
+    // Плейсхолдер в превью, AsyncImage в рантайме
     if (LocalInspectionMode.current) {
         Box(
             modifier = Modifier
@@ -67,36 +63,32 @@ private fun ItemInfo(name: String, count: Int) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         BasicText(
             name,
-            modifier = Modifier
-                .padding(start = 5.dp, 2.dp),
+            modifier = Modifier.padding(start = 5.dp, 2.dp),
             maxLines = 1,
-            autoSize = TextAutoSize
-                .StepBased(
-                    minFontSize = 10.sp,
-                    maxFontSize = 30.sp
-                ),
+            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 30.sp),
         )
-
         Text(
             count.toString(),
-            modifier = Modifier
-                .padding(2.dp),
+            modifier = Modifier.padding(2.dp),
             fontSize = 30.sp,
-            color = Color.Blue)
+            color = Color.Blue
+        )
     }
 }
 
 @Composable
 private fun ItemControls(
     item: PersonEntity,
-    onClickDelete: (PersonEntity) -> Unit,
     onClickIncrement: (PersonEntity) -> Unit,
     onClickDecrement: (PersonEntity) -> Unit
 ) {
     Row {
         Icon(
-            modifier = Modifier.size(100.dp).clickable { onClickIncrement(item) },
-            imageVector = Icons.Default.Add,
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .size(70.dp)
+                .clickable { onClickIncrement(item) },
+            painter = painterResource(id = R.drawable.icon_plus),
             contentDescription = "Add",
             tint = Color.Blue
         )
@@ -106,56 +98,101 @@ private fun ItemControls(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                modifier = Modifier.size(32.dp).clickable { onClickDelete(item) },
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete"
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                modifier = Modifier.size(32.dp).clickable { onClickDecrement(item) },
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onClickDecrement(item) },
                 imageVector = Icons.Default.Remove,
-                contentDescription = "Remove"
+                contentDescription = "Decrement",
+                tint = Color.Red.copy(alpha = 0.4f)
             )
         }
     }
 }
 
-// Сам элемент без дублирования
 @Composable
 fun ListItem(
     item: PersonEntity,
     onClick: (PersonEntity) -> Unit = {},
-    onClickDelete: (PersonEntity) -> Unit = {},
     onClickIncrement: (PersonEntity) -> Unit = {},
     onClickDecrement: (PersonEntity) -> Unit = {}
 ) {
-    Row(
+    val shape = RoundedCornerShape(14.dp)
+    val leftWidth = 96.dp     // фикс. ширина блока с картинкой
+    val rightWidth = 120.dp   // фикс. ширина блока с иконками
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .padding(2.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color.LightGray.copy(alpha = 0.9f))
-            .clickable { onClick(item) },
-        verticalAlignment = Alignment.CenterVertically
+            .padding(2.dp) // внешний отступ от соседей
     ) {
-        ItemImage(item.image)
-        Spacer(modifier = Modifier.weight(1f))
-        ItemInfo(item.name, item.count)
-        Spacer(modifier = Modifier.weight(1f))
-        ItemControls(item, onClickDelete, onClickIncrement, onClickDecrement)
+        // Слой с ободком: базовый равномерный + акцент вниз‑вправо
+        Box(
+            Modifier
+                .matchParentSize()
+                .drawWithCache {
+                    val baseStroke = 1.dp.toPx()
+                    val accentStroke = 2.dp.toPx()
+                    val r = 14.dp.toPx()
+
+                    val baseColor = Color(0x33000000) // 20% чёрного — ровная линия по периметру
+                    val accentBrush = Brush.linearGradient(
+                        colors = listOf(Color.Transparent, Color(0x33000000)),
+                        start = Offset.Zero,
+                        end = Offset(size.width, size.height)
+                    )
+
+                    onDrawBehind {
+                        // Ровный тонкий периметр — чтобы слева тоже было видно
+                        drawRoundRect(
+                            color = baseColor,
+                            cornerRadius = CornerRadius(r, r),
+                            style = Stroke(width = baseStroke)
+                        )
+                        // Лёгкий акцент вниз‑вправо
+                        drawRoundRect(
+                            brush = accentBrush,
+                            cornerRadius = CornerRadius(r, r),
+                            style = Stroke(width = accentStroke)
+                        )
+                    }
+                }
+        )
+
+        // Контент
+        Row(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(shape)
+                .background(Color.White.copy(alpha = 0.3f)) // 70% прозрачности
+                .clickable { onClick(item) },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 1) фиксированный блок с картинкой
+            Box(Modifier.width(leftWidth), contentAlignment = Alignment.Center) {
+                ItemImage(item.image)
+            }
+            // 2) центр тянется
+            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                ItemInfo(item.name, item.count)
+            }
+            // 3) фиксированный блок с иконками
+            Box(Modifier.width(rightWidth), contentAlignment = Alignment.Center) {
+                ItemControls(item, onClickIncrement, onClickDecrement)
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ListItemPreview(){
+fun ListItemPreview() {
     ListItem(
         item = PersonEntity(
             id = 1,
-            name = "Diana",
-            count = 5,
-            image = "pikachu.webp"
+            name = "Диана",
+            count = 0,
+            image = "chermander.webp"
         )
     )
 }
