@@ -93,7 +93,7 @@ private fun ItemControls(
             tint = Color.Blue
         )
         Column(
-            modifier = Modifier.padding(3.dp),
+            modifier = Modifier.padding(top = 0.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
