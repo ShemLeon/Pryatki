@@ -1,5 +1,7 @@
 package com.leoevg.pryatki.presenter.components
 
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +34,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.leoevg.pryatki.R
 import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.presenter.ui.theme.CardGlass
+import com.leoevg.pryatki.presenter.ui.theme.MinusBg
+import com.leoevg.pryatki.presenter.ui.theme.OnAccent
+import com.leoevg.pryatki.presenter.ui.theme.PlusBg
 
 @Composable
 private fun ItemImage(imageName: String) {
@@ -41,19 +48,22 @@ private fun ItemImage(imageName: String) {
                 .padding(6.dp)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color.Red.copy(alpha = 0.3f))
+                .background(CardGlass)
         )
     } else {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data("file:///android_asset/images/$imageName")
+                .crossfade(true)
                 .build(),
             modifier = Modifier
                 .padding(start = 8.dp, top = 5.dp, bottom = 5.dp)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(14.dp)),
             contentDescription = "Image",
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.preview_image),
+            error = painterResource(id = R.drawable.preview_image)
         )
     }
 }
@@ -66,12 +76,13 @@ private fun ItemInfo(name: String, count: Int) {
             modifier = Modifier.padding(start = 5.dp, 2.dp),
             maxLines = 1,
             autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 30.sp),
+            style = TextStyle(color = Color.White) // добавить
         )
         Text(
             count.toString(),
             modifier = Modifier.padding(2.dp),
             fontSize = 30.sp,
-            color = Color.Blue
+            color = Color.White // было Color.Blue
         )
     }
 }
@@ -82,28 +93,40 @@ private fun ItemControls(
     onClickIncrement: (PersonEntity) -> Unit,
     onClickDecrement: (PersonEntity) -> Unit
 ) {
-    Row {
-        Icon(
+    val haptics = LocalHapticFeedback.current
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .size(70.dp)
-                .clickable { onClickIncrement(item) },
-            painter = painterResource(id = R.drawable.icon_plus),
-            contentDescription = "Add",
-            tint = Color.Blue
-        )
-        Column(
-            modifier = Modifier.padding(top = 0.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(PlusBg)
+                .clickable {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClickIncrement(item)
+                           },
+            contentAlignment = Alignment.Center
         ) {
             Icon(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onClickDecrement(item) },
+                painterResource(id = R.drawable.icon_plus),
+                contentDescription = "Add",
+                tint = OnAccent
+            )
+        }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MinusBg)
+                .clickable { onClickDecrement(item) },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
                 imageVector = Icons.Default.Remove,
                 contentDescription = "Decrement",
-                tint = Color.Red.copy(alpha = 0.4f)
+                tint = OnAccent
             )
         }
     }
@@ -164,7 +187,7 @@ fun ListItem(
             modifier = Modifier
                 .matchParentSize()
                 .clip(shape)
-                .background(Color.White.copy(alpha = 0.3f)) // 70% прозрачности
+                .background(CardGlass) // было Color.White.copy(alpha = 0.3f)
                 .clickable { onClick(item) },
             verticalAlignment = Alignment.CenterVertically
         ) {

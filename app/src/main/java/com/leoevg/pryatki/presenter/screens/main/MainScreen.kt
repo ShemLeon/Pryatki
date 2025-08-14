@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -34,24 +35,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leoevg.pryatki.data.PersonEntity
 import com.leoevg.pryatki.presenter.components.ListItem
 import com.leoevg.pryatki.presenter.components.NameInputRow
+import com.leoevg.pryatki.presenter.ui.theme.Indigo500
+import com.leoevg.pryatki.presenter.ui.theme.Violet500
 
 @Composable
 fun MainScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
 ) {
     val itemsList = mainScreenViewModel.itemsList.collectAsState(initial = emptyList())
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6)
-        )
-    )
+    val gradientBrush = Brush.verticalGradient(listOf(Indigo500, Violet500))
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = gradientBrush)
-            .padding(horizontal = 10.dp),
+            .padding(horizontal = 16.dp),
     ) {
         NameInputRow(
             text = mainScreenViewModel.newText.value,
@@ -61,7 +59,7 @@ fun MainScreen(
             },
             onAddClick = { mainScreenViewModel.insertItem() },
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 100.dp, bottom = 16.dp)
+                .padding(top = 60.dp, bottom = 16.dp)
         )
 
         mainScreenViewModel.errorMessage.value?.let { error ->
@@ -102,7 +100,7 @@ fun MainScreen(
                                 .fillMaxWidth()
                                 .height(100.dp)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFFFFE5E5).copy(alpha = bgAlpha))
+                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = bgAlpha))
                                 .padding(end = 20.dp),
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically
@@ -110,7 +108,7 @@ fun MainScreen(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = null,
-                                tint = Color.Red,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.alpha(bgAlpha)
                             )
                         }

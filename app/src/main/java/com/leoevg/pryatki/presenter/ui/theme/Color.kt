@@ -9,3 +9,13 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+val Indigo500 = Color(0xFF6366F1)
+val Violet500 = Color(0xFF8B5CF6)
+val SurfaceGlass = Color(0xFFFFFFFF).copy(alpha = 0.14f)
+val CardGlass = Color(0xFFFFFFFF).copy(alpha = 0.20f)
+val PlusBg = Color(0xFFFF7A21)      // ярко‑оранжевый квадратик
+val MinusBg = Color(0xFFCC4CFF)     // ярко‑пурпурный квадратик
+val OnAccent = Color(0xFFFFFFFF)
+val ErrorContainerLight = Color(0xFFFFE5E5)
+val ErrorRed = Color(0xFFDC2626)

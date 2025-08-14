@@ -1,11 +1,16 @@
 package com.leoevg.pryatki.presenter.components
 
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +27,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.leoevg.pryatki.presenter.ui.theme.OnAccent
+import com.leoevg.pryatki.presenter.ui.theme.PlusBg
+import com.leoevg.pryatki.presenter.ui.theme.SurfaceGlass
 
 @Composable
 fun NameInputRow(
@@ -30,29 +38,47 @@ fun NameInputRow(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptics = LocalHapticFeedback.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.Gray)
-            .padding(16.dp), // внутренние паддинги КОМПОНЕНТА
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+            .background(SurfaceGlass)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             value = text,
             onValueChange = onTextChange,
             modifier = Modifier.weight(1f),
+            placeholder = { Text("Введите имя...", color = Color.White.copy(alpha = 0.6f)) },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                cursorColor = Color.White
             )
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        IconButton(onClick = onAddClick) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+        Spacer(Modifier.width(12.dp))
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(PlusBg)
+                .clickable {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAddClick()
+                           },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+                tint = OnAccent)
         }
     }
 }
