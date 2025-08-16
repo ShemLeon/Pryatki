@@ -38,6 +38,15 @@ import com.leoevg.pryatki.presenter.ui.theme.CardGlass
 import com.leoevg.pryatki.presenter.ui.theme.MinusBg
 import com.leoevg.pryatki.presenter.ui.theme.OnAccent
 import com.leoevg.pryatki.presenter.ui.theme.PlusBg
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix as ComposeColorMatrix
+import androidx.compose.ui.draw.alpha
+import android.graphics.Shader
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import android.graphics.ColorMatrix as AndroidColorMatrix
+import android.graphics.ColorMatrixColorFilter
 
 @Composable
 private fun ItemImage(imageName: String) {
@@ -106,7 +115,7 @@ private fun ItemControls(
                 .clickable {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     onClickIncrement(item)
-                           },
+                },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -149,6 +158,7 @@ fun ListItem(
             .height(100.dp)
             .padding(2.dp) // внешний отступ от соседей
     ) {
+
         // Слой с ободком: базовый равномерный + акцент вниз‑вправо
         Box(
             Modifier
@@ -158,9 +168,9 @@ fun ListItem(
                     val accentStroke = 2.dp.toPx()
                     val r = 14.dp.toPx()
 
-                    val baseColor = Color(0x33000000) // 20% чёрного — ровная линия по периметру
+                    val baseColor = Color(0x66FFFFFF) // ~40% белого
                     val accentBrush = Brush.linearGradient(
-                        colors = listOf(Color.Transparent, Color(0x33000000)),
+                        colors = listOf(Color.Transparent, Color(0x26FFFFFF)), // лёгкий белый акцент
                         start = Offset.Zero,
                         end = Offset(size.width, size.height)
                     )

@@ -88,7 +88,7 @@ fun MainScreenContent(
             .background(brush = gradientBrush)
     ) {
         Image(
-            painter = painterResource(R.drawable.fon),
+            painter = painterResource(R.drawable.bg_pattern),
             contentDescription = null,
             modifier = Modifier.fillMaxSize().alpha(0.08f),
             contentScale = ContentScale.Crop
