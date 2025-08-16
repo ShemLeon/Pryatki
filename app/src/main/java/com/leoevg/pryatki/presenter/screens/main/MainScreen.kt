@@ -1,7 +1,9 @@
 package com.leoevg.pryatki.presenter.screens.main
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,21 +30,18 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.leoevg.pryatki.R
 import com.leoevg.pryatki.data.PersonEntity
 import com.leoevg.pryatki.presenter.components.ListItem
 import com.leoevg.pryatki.presenter.components.NameInputRow
 import com.leoevg.pryatki.presenter.ui.theme.Indigo500
 import com.leoevg.pryatki.presenter.ui.theme.Violet500
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import com.leoevg.pryatki.R
 
 @Composable
 fun MainScreen(
@@ -67,7 +66,6 @@ fun MainScreen(
         onDecrement = { mainScreenViewModel.decrementCount(it) },
         onDelete = { mainScreenViewModel.deleteItem(it) }
     )
-
 }
 
 @Composable
@@ -84,78 +82,88 @@ fun MainScreenContent(
 ) {
     val gradientBrush = Brush.verticalGradient(listOf(Indigo500, Violet500))
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = gradientBrush)
-            .padding(horizontal = 16.dp),
     ) {
-        NameInputRow(
-            text = text,
-            onTextChange = { onTextChange(it) },
-            onAddClick = {  onAddClick() },
-            modifier = Modifier
-                .padding(top = 60.dp, bottom = 16.dp)
+        Image(
+            painter = painterResource(R.drawable.fon),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize().alpha(0.08f),
+            contentScale = ContentScale.Crop
         )
 
-        errorMessage?.let { error ->
-            Text(
-                text = error,
-                color = Color.Red,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        LazyColumn(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp)
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
         ) {
-            items(items, key = { it.id ?: it.hashCode() }) { item ->
-                val dismissState = rememberSwipeToDismissBoxState(
-                    confirmValueChange = { value ->
-                        if (value == SwipeToDismissBoxValue.EndToStart) { onDelete(item); true } else false
-                    }
+            NameInputRow(
+                text = text,
+                onTextChange = { onTextChange(it) },
+                onAddClick = { onAddClick() },
+                modifier = Modifier.padding(top = 60.dp, bottom = 16.dp)
+            )
+
+            errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
+            }
 
-                val bgAlpha =
-                    if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+            Spacer(modifier = Modifier.height(5.dp))
 
-                SwipeToDismissBox(
-                    state = dismissState,
-                    enableDismissFromStartToEnd = false,
-                    enableDismissFromEndToStart = true,
-                    backgroundContent = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = bgAlpha))
-                                .padding(end = 20.dp),
-                            horizontalArrangement = Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.alpha(bgAlpha)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+            ) {
+                items(items, key = { it.id ?: it.hashCode() }) { item ->
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+                            if (value == SwipeToDismissBoxValue.EndToStart) { onDelete(item); true } else false
+                        }
+                    )
+
+                    val bgAlpha = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        enableDismissFromEndToStart = true,
+                        backgroundContent = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = bgAlpha))
+                                    .padding(end = 20.dp),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.alpha(bgAlpha)
+                                )
+                            }
+                        },
+                        content = {
+                            ListItem(
+                                item = item,
+                                onClick = { onItemClick(it) },
+                                onClickIncrement = { onIncrement(it) },
+                                onClickDecrement = { onDecrement(it) }
                             )
                         }
-                    },
-                    content = {
-                        ListItem(
-                            item = item,
-                            onClick = { onItemClick(it) },
-                            onClickIncrement = { onIncrement(it) },
-                            onClickDecrement = {  onDecrement(it) }
-                        )
-                    }
-                )
+                    )
+                }
             }
         }
     }
