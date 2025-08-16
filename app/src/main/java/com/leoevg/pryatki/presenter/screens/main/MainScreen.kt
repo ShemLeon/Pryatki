@@ -37,12 +37,51 @@ import com.leoevg.pryatki.presenter.components.ListItem
 import com.leoevg.pryatki.presenter.components.NameInputRow
 import com.leoevg.pryatki.presenter.ui.theme.Indigo500
 import com.leoevg.pryatki.presenter.ui.theme.Violet500
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.leoevg.pryatki.R
 
 @Composable
 fun MainScreen(
     mainScreenViewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
 ) {
     val itemsList = mainScreenViewModel.itemsList.collectAsState(initial = emptyList())
+
+    MainScreenContent(
+        items = itemsList.value,
+        text = mainScreenViewModel.newText.value,
+        errorMessage = mainScreenViewModel.errorMessage.value,
+        onTextChange = {
+            mainScreenViewModel.newText.value = it
+            mainScreenViewModel.errorMessage.value = null
+        },
+        onAddClick = { mainScreenViewModel.insertItem() },
+        onItemClick = {
+            mainScreenViewModel.personEntity = it
+            mainScreenViewModel.newText.value = it.name
+        },
+        onIncrement = { mainScreenViewModel.incrementCount(it) },
+        onDecrement = { mainScreenViewModel.decrementCount(it) },
+        onDelete = { mainScreenViewModel.deleteItem(it) }
+    )
+
+}
+
+@Composable
+fun MainScreenContent(
+    items: List<PersonEntity>,
+    text: String,
+    errorMessage: String?,
+    onTextChange: (String) -> Unit,
+    onAddClick: () -> Unit,
+    onItemClick: (PersonEntity) -> Unit,
+    onIncrement: (PersonEntity) -> Unit,
+    onDecrement: (PersonEntity) -> Unit,
+    onDelete: (PersonEntity) -> Unit
+) {
     val gradientBrush = Brush.verticalGradient(listOf(Indigo500, Violet500))
 
     Column(
@@ -52,17 +91,14 @@ fun MainScreen(
             .padding(horizontal = 16.dp),
     ) {
         NameInputRow(
-            text = mainScreenViewModel.newText.value,
-            onTextChange = {
-                mainScreenViewModel.newText.value = it
-                mainScreenViewModel.errorMessage.value = null
-            },
-            onAddClick = { mainScreenViewModel.insertItem() },
+            text = text,
+            onTextChange = { onTextChange(it) },
+            onAddClick = {  onAddClick() },
             modifier = Modifier
                 .padding(top = 60.dp, bottom = 16.dp)
         )
 
-        mainScreenViewModel.errorMessage.value?.let { error ->
+        errorMessage?.let { error ->
             Text(
                 text = error,
                 color = Color.Red,
@@ -78,17 +114,15 @@ fun MainScreen(
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
         ) {
-            items(itemsList.value, key = { it.id ?: it.hashCode() }) { item ->
+            items(items, key = { it.id ?: it.hashCode() }) { item ->
                 val dismissState = rememberSwipeToDismissBoxState(
                     confirmValueChange = { value ->
-                        if (value == SwipeToDismissBoxValue.EndToStart) {
-                            mainScreenViewModel.deleteItem(item)
-                            true
-                        } else false
+                        if (value == SwipeToDismissBoxValue.EndToStart) { onDelete(item); true } else false
                     }
                 )
 
-                val bgAlpha = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+                val bgAlpha =
+                    if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
 
                 SwipeToDismissBox(
                     state = dismissState,
@@ -116,12 +150,9 @@ fun MainScreen(
                     content = {
                         ListItem(
                             item = item,
-                            onClick = {
-                                mainScreenViewModel.personEntity = it
-                                mainScreenViewModel.newText.value = it.name
-                            },
-                            onClickIncrement = { mainScreenViewModel.incrementCount(it) },
-                            onClickDecrement = { mainScreenViewModel.decrementCount(it) }
+                            onClick = { onItemClick(it) },
+                            onClickIncrement = { onIncrement(it) },
+                            onClickDecrement = {  onDecrement(it) }
                         )
                     }
                 )
@@ -132,30 +163,19 @@ fun MainScreen(
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun MainScreenPreview() {
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
+fun MainScreenContentPreview() {
+    MainScreenContent(
+        items = listOf(
+            PersonEntity(id = 1, name = "Пикачу", count = 5, image = "pikachu.webp"),
+            PersonEntity(id = 2, name = "Чермандер", count = 2, image = "chermander.webp")
+        ),
+        text = "Введите имя...",
+        errorMessage = null,
+        onTextChange = {},
+        onAddClick = {},
+        onItemClick = {},
+        onIncrement = {},
+        onDecrement = {},
+        onDelete = {}
     )
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = gradientBrush)
-            .padding(horizontal = 10.dp),
-    ) {
-        NameInputRow(
-            text = "Введите имя...",
-            onTextChange = {},
-            onAddClick = {},
-            modifier = Modifier.padding(top = 100.dp, bottom = 16.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        ListItem(
-            item = PersonEntity(
-                id = 1,
-                name = "Пикачу",
-                count = 5,
-                image = "pikachu.webp"
-            )
-        )
-    }
 }
