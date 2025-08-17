@@ -38,14 +38,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leoevg.pryatki.R
 import com.leoevg.pryatki.data.PersonEntity
-import com.leoevg.pryatki.presenter.components.ListItem
-import com.leoevg.pryatki.presenter.components.NameInputRow
+import com.leoevg.pryatki.presenter.ui.components.ListItem
+import com.leoevg.pryatki.presenter.ui.components.NameInputRow
 import com.leoevg.pryatki.presenter.ui.theme.Indigo500
 import com.leoevg.pryatki.presenter.ui.theme.Violet500
 
 @Composable
 fun MainScreen(
-    mainScreenViewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
+    mainScreenViewModel: MainScreenViewModel = viewModel(
+        factory = MainScreenViewModel.Factory
+    )
 ) {
     val itemsList = mainScreenViewModel.itemsList.collectAsState(initial = emptyList())
 
@@ -53,18 +55,12 @@ fun MainScreen(
         items = itemsList.value,
         text = mainScreenViewModel.newText.value,
         errorMessage = mainScreenViewModel.errorMessage.value,
-        onTextChange = {
-            mainScreenViewModel.newText.value = it
-            mainScreenViewModel.errorMessage.value = null
-        },
-        onAddClick = { mainScreenViewModel.insertItem() },
-        onItemClick = {
-            mainScreenViewModel.personEntity = it
-            mainScreenViewModel.newText.value = it.name
-        },
-        onIncrement = { mainScreenViewModel.incrementCount(it) },
-        onDecrement = { mainScreenViewModel.decrementCount(it) },
-        onDelete = { mainScreenViewModel.deleteItem(it) }
+        onTextChange = { mainScreenViewModel.onEvent(MainScreenEvent.OnTextChange(it)) },
+        onAddClick = { mainScreenViewModel.onEvent(MainScreenEvent.OnAddClick) },
+        onItemClick = { mainScreenViewModel.onEvent(MainScreenEvent.OnItemClick(it)) },
+        onIncrement = { mainScreenViewModel.onEvent(MainScreenEvent.OnIncrement(it)) },
+        onDecrement = { mainScreenViewModel.onEvent(MainScreenEvent.OnDecrement(it)) },
+        onDelete = { mainScreenViewModel.onEvent(MainScreenEvent.OnDelete(it)) }
     )
 }
 
@@ -90,7 +86,9 @@ fun MainScreenContent(
         Image(
             painter = painterResource(R.drawable.bg_pattern),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize().alpha(0.08f),
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.08f),
             contentScale = ContentScale.Crop
         )
 
@@ -103,7 +101,8 @@ fun MainScreenContent(
                 text = text,
                 onTextChange = { onTextChange(it) },
                 onAddClick = { onAddClick() },
-                modifier = Modifier.padding(top = 60.dp, bottom = 16.dp)
+                modifier = Modifier
+                    .padding(top = 60.dp, bottom = 16.dp)
             )
 
             errorMessage?.let { error ->
@@ -125,11 +124,14 @@ fun MainScreenContent(
                 items(items, key = { it.id ?: it.hashCode() }) { item ->
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = { value ->
-                            if (value == SwipeToDismissBoxValue.EndToStart) { onDelete(item); true } else false
+                            if (value == SwipeToDismissBoxValue.EndToStart) {
+                                onDelete(item); true
+                            } else false
                         }
                     )
 
-                    val bgAlpha = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+                    val bgAlpha =
+                        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
 
                     SwipeToDismissBox(
                         state = dismissState,

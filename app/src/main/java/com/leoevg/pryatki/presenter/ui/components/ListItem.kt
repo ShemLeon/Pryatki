@@ -1,4 +1,4 @@
-package com.leoevg.pryatki.presenter.components
+package com.leoevg.pryatki.presenter.ui.components
 
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -38,15 +38,6 @@ import com.leoevg.pryatki.presenter.ui.theme.CardGlass
 import com.leoevg.pryatki.presenter.ui.theme.MinusBg
 import com.leoevg.pryatki.presenter.ui.theme.OnAccent
 import com.leoevg.pryatki.presenter.ui.theme.PlusBg
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix as ComposeColorMatrix
-import androidx.compose.ui.draw.alpha
-import android.graphics.Shader
-import androidx.compose.ui.graphics.asComposeRenderEffect
-import android.graphics.ColorMatrix as AndroidColorMatrix
-import android.graphics.ColorMatrixColorFilter
 
 @Composable
 private fun ItemImage(imageName: String) {

@@ -16,9 +16,31 @@ import kotlinx.coroutines.launch
 
 class MainScreenViewModel(val database: MainDB, private val context: Context): ViewModel() {
     val itemsList = database.dao.getAllItems()
+
+    private val _state = mutableStateOf(MainScreenState())
+    val state = _state
+
     val newText = mutableStateOf("")
     val errorMessage = mutableStateOf<String?>(null)
     var personEntity: PersonEntity? = null
+
+    fun onEvent(event: MainScreenEvent){
+        // SOLID
+        when(event){
+            is MainScreenEvent.OnTextChange -> {
+                newText.value = event.text
+                errorMessage.value = null
+            }
+            MainScreenEvent.OnAddClick -> insertItem()
+            is MainScreenEvent.OnItemClick -> {
+                personEntity = event.item
+                newText.value = event.item.name
+            }
+            is MainScreenEvent.OnIncrement -> incrementCount(event.item)
+            is MainScreenEvent.OnDecrement -> decrementCount(event.item)
+            is MainScreenEvent.OnDelete -> deleteItem(event.item)
+        }
+    }
 
     fun insertItem() = viewModelScope.launch {
         val name = newText.value.trim()
@@ -40,7 +62,6 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
                 errorMessage.value = "Персонаж с таким именем уже существует!"
                 return@launch
             }
-
             // Получаем используемые картинки и выбираем оптимальную
             val usedImages = database.dao.getUsedImages()
             val selectedImage = ImageUtils.getUnusedImageName(context, usedImages)
@@ -53,7 +74,6 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
             database.dao.insertItem(newItem)
             errorMessage.value = null // Сбрасываем ошибку при успешном добавлении
         }
-
         personEntity = null
         newText.value = ""
     }

@@ -1,10 +1,9 @@
-package com.leoevg.pryatki.presenter.components
+package com.leoevg.pryatki.presenter.ui.components
 
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -44,14 +42,16 @@ fun NameInputRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(SurfaceGlass)
-            .padding(16.dp),
+            .padding(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             value = text,
             onValueChange = onTextChange,
             modifier = Modifier.weight(1f),
-            placeholder = { Text("Введите имя...", color = Color.White.copy(alpha = 0.6f)) },
+            placeholder = {
+                Text("Введите имя...",
+                    color = Color.White.copy(alpha = 0.6f)) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
@@ -60,7 +60,7 @@ fun NameInputRow(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-                cursorColor = Color.White
+                cursorColor = Color.Transparent
             )
         )
         Spacer(Modifier.width(12.dp))
@@ -83,7 +83,7 @@ fun NameInputRow(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF2B2D31)
 @Composable
 fun NameInputRowPreview() {
     // Внешние паддинги только для превью, чтобы не было "на весь экран"
@@ -91,6 +91,6 @@ fun NameInputRowPreview() {
         text = "Введите имя...",
         onTextChange = {},
         onAddClick = {},
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
     )
 }
