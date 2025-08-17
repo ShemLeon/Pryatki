@@ -38,6 +38,7 @@ class PersonRepositoryImpl(
     }
 
 
+    // Мапперы из Entity в Модель дб в модель домена и наоборот
     private fun PersonEntity.toPerson(): Person {
         return Person(
             id = this.id,

@@ -4,7 +4,8 @@ import com.leoevg.pryatki.domain.models.Person
 import com.leoevg.pryatki.domain.repository.PersonRepository
 
 class IncrementCountUseCase(private val repository: PersonRepository) {
-    suspend fun execute(param: Person) {
-        repository.updatePerson(param.copy(count = param.count + 1))
+    suspend fun execute(person: Person) {
+        repository.updatePerson(person.copy(count = person.count + 1))
     }
 }
+

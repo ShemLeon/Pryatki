@@ -55,12 +55,7 @@ fun MainScreen(
         items = itemsList.value,
         text = mainScreenViewModel.newText.value,
         errorMessage = mainScreenViewModel.errorMessage.value,
-        onTextChange = { mainScreenViewModel.onEvent(MainScreenEvent.OnTextChange(it)) },
-        onAddClick = { mainScreenViewModel.onEvent(MainScreenEvent.OnAddClick) },
-        onItemClick = { mainScreenViewModel.onEvent(MainScreenEvent.OnItemClick(it)) },
-        onIncrement = { mainScreenViewModel.onEvent(MainScreenEvent.OnIncrement(it)) },
-        onDecrement = { mainScreenViewModel.onEvent(MainScreenEvent.OnDecrement(it)) },
-        onDelete = { mainScreenViewModel.onEvent(MainScreenEvent.OnDelete(it)) }
+        onEvent = mainScreenViewModel::onEvent // Передаем саму функцию onEvent
     )
 }
 
@@ -93,8 +88,8 @@ fun MainScreenContent(
         ) {
             NameInputRow(
                 text = text,
-                onTextChange = { onTextChange(it) },
-                onAddClick = { onAddClick() },
+                onTextChange = { onEvent(MainScreenEvent.OnTextChange(it)) },
+                onAddClick = { onEvent(MainScreenEvent.OnAddClick) },
                 modifier = Modifier
                     .padding(top = 60.dp, bottom = 16.dp)
             )
@@ -119,13 +114,14 @@ fun MainScreenContent(
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = { value ->
                             if (value == SwipeToDismissBoxValue.EndToStart) {
-                                onDelete(item); true
+                                { onEvent(MainScreenEvent.OnDelete(item)) }; true
                             } else false
                         }
                     )
 
                     val bgAlpha =
-                        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f else 1f
+                        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0f
+                        else 1f
 
                     SwipeToDismissBox(
                         state = dismissState,
@@ -153,9 +149,9 @@ fun MainScreenContent(
                         content = {
                             ListItem(
                                 item = item,
-                                onClick = { onItemClick(it) },
-                                onClickIncrement = { onIncrement(it) },
-                                onClickDecrement = { onDecrement(it) }
+                                onClick = { onEvent(MainScreenEvent.OnItemClick(it)) },
+                                onClickIncrement = { onEvent(MainScreenEvent.OnIncrement(it)) },
+                                onClickDecrement = { onEvent(MainScreenEvent.OnDecrement(it)) }
                             )
                         }
                     )
@@ -175,11 +171,6 @@ fun MainScreenContentPreview() {
         ),
         text = "Введите имя...",
         errorMessage = null,
-        onTextChange = {},
-        onAddClick = {},
-        onItemClick = {},
-        onIncrement = {},
-        onDecrement = {},
-        onDelete = {}
+        onEvent = {}
     )
 }

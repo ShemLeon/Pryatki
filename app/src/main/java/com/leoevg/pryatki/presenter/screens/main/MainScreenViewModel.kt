@@ -13,12 +13,16 @@ import com.leoevg.pryatki.data.PersonEntity
 import com.leoevg.pryatki.utils.ImageUtils
 import kotlinx.coroutines.launch
 import com.leoevg.pryatki.domain.models.Person
+import com.leoevg.pryatki.domain.usecase.AddPersonUseCase
 import com.leoevg.pryatki.domain.usecase.DecrementCountUseCase
+import com.leoevg.pryatki.domain.usecase.IncrementCountUseCase
 
 class MainScreenViewModel(
     val database: MainDB,
     private val context: Context,
-    private val decrementCountUseCase: DecrementCountUseCase
+    private val decrementCountUseCase: DecrementCountUseCase,
+    private val incrementCountUseCase: IncrementCountUseCase,
+    private val addPersonUseCase: AddPersonUseCase,
 ): ViewModel() {
     val personsList = database.dao.getAllPersons()
     private val _state = mutableStateOf(MainScreenState())
@@ -57,45 +61,28 @@ class MainScreenViewModel(
 
     fun insertItem() = viewModelScope.launch {
         val name = newText.value.trim()
-        // Проверка на пустое имя
-        if (name.isEmpty()) {
-            _state.value = _state.value.copy(
-                errorMessage = "Введи имя!"
-            )
+        // Логика редактирования существующего элемента пока остается здесь для простоты
+        if (personEntity != null) {
+            val updatedItem = personEntity!!.copy(name = name)
+            database.dao.updateItem(updatedItem) // Это тоже нужно будет вынести в UseCase
+            personEntity = null
+            newText.value = ""
             return@launch
         }
 
-        if (personEntity != null) {
-            // Редактирование существующего элемента
-            val updatedItem = personEntity!!.copy(name = name)
-            database.dao.updateItem(updatedItem)
-        } else {
-            // Проверка на дублирование имени
-            val existingCount = database.dao.getCountByName(name)
-            if (existingCount > 0) {
-                _state.value = _state.value.copy(
-                    errorMessage= "Персонаж с таким именем уже существует!"
-                )
-                return@launch
-            }
-            // Получаем используемые картинки и выбираем оптимальную
-            val usedImages = database.dao.getUsedImages()
-            val selectedImage = ImageUtils.getUnusedImageName(context, usedImages)
-
-            val newItem = PersonEntity(
-                name = name,
-                count = 0,
-                image = selectedImage
-            )
-            database.dao.insertItem(newItem)
-            _state.value = _state.value.copy(
-                errorMessage = null
-            )
-            // Сбрасываем ошибку при успешном добавлении
+        addPersonUseCase.execute(name)
+            .onSuccess {
+            // Успех: сбрасываем поле ввода и ошибку
+            newText.value = ""
+            errorMessage.value = null
+            _state.value = _state.value.copy(errorMessage = null)
         }
-        personEntity = null
-        newText.value = ""
-    }
+            .onFailure { error ->
+                // Ошибка: показываем сообщение из UseCase
+                errorMessage.value = error.message
+                _state.value = _state.value.copy(errorMessage = error.message)
+            }
+        }
 
     fun deleteItem(item: PersonEntity) = viewModelScope.launch {
         database.dao.deleteItem(item)
@@ -109,8 +96,7 @@ class MainScreenViewModel(
 
     // Плюс в рейтинг
     fun incrementCount(item: PersonEntity) = viewModelScope.launch {
-        val updatedItem = item.copy(count = item.count + 1)
-        database.dao.updateItem(updatedItem)
+        incrementCountUseCase.execute(item.toPerson())
     }
 
 // Mapper -
@@ -132,10 +118,15 @@ class MainScreenViewModel(
                 val app = checkNotNull(extras[APPLICATION_KEY]) as App
                 val repository = com.leoevg.pryatki.data.repository.PersonRepositoryImpl(app.database.dao)
                 val decrementCountUseCase = DecrementCountUseCase(repository)
+                val incrementCountUseCase = IncrementCountUseCase(repository)
+                val addPersonUseCase = AddPersonUseCase(repository, app.applicationContext)
+
                 return MainScreenViewModel(
                     app.database,
                     app.applicationContext,
-                    decrementCountUseCase
+                    decrementCountUseCase,
+                    incrementCountUseCase,
+                    addPersonUseCase
                 ) as T
             }
         }
