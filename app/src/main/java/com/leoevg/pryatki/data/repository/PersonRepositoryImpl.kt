@@ -37,6 +37,7 @@ class PersonRepositoryImpl(
         dao.updateItem(person.toPersonEntity())
     }
 
+
     private fun PersonEntity.toPerson(): Person {
         return Person(
             id = this.id,

@@ -69,12 +69,7 @@ fun MainScreenContent(
     items: List<PersonEntity>,
     text: String,
     errorMessage: String?,
-    onTextChange: (String) -> Unit,
-    onAddClick: () -> Unit,
-    onItemClick: (PersonEntity) -> Unit,
-    onIncrement: (PersonEntity) -> Unit,
-    onDecrement: (PersonEntity) -> Unit,
-    onDelete: (PersonEntity) -> Unit
+    onEvent: (MainScreenEvent) -> Unit
 ) {
     val gradientBrush = Brush.verticalGradient(listOf(Indigo500, Violet500))
     Box(

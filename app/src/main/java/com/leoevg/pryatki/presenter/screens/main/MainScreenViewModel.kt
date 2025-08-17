@@ -12,9 +12,14 @@ import com.leoevg.pryatki.app.App
 import com.leoevg.pryatki.data.PersonEntity
 import com.leoevg.pryatki.utils.ImageUtils
 import kotlinx.coroutines.launch
+import com.leoevg.pryatki.domain.models.Person
+import com.leoevg.pryatki.domain.usecase.DecrementCountUseCase
 
-
-class MainScreenViewModel(val database: MainDB, private val context: Context): ViewModel() {
+class MainScreenViewModel(
+    val database: MainDB,
+    private val context: Context,
+    private val decrementCountUseCase: DecrementCountUseCase
+): ViewModel() {
     val personsList = database.dao.getAllPersons()
     private val _state = mutableStateOf(MainScreenState())
     val state = _state
@@ -98,10 +103,8 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
 
     // Минус в рейтинг
     fun decrementCount(item: PersonEntity) = viewModelScope.launch {
-        if (item.count > 0) {
-            val updatedItem = item.copy(count = item.count - 1)
-            database.dao.updateItem(updatedItem)
-        }
+        // Конвертируем Entity в модель домена перед вызовом UseCase
+        decrementCountUseCase.execute(item.toPerson())
     }
 
     // Плюс в рейтинг
@@ -110,6 +113,15 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
         database.dao.updateItem(updatedItem)
     }
 
+// Mapper -
+    private fun PersonEntity.toPerson(): Person {
+        return Person(
+            id = this.id,
+            name = this.name,
+            count = this.count,
+            image = this.image
+        )
+    }
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -118,7 +130,13 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
                 extras: CreationExtras
             ): T {
                 val app = checkNotNull(extras[APPLICATION_KEY]) as App
-                return MainScreenViewModel(app.database, app.applicationContext) as T
+                val repository = com.leoevg.pryatki.data.repository.PersonRepositoryImpl(app.database.dao)
+                val decrementCountUseCase = DecrementCountUseCase(repository)
+                return MainScreenViewModel(
+                    app.database,
+                    app.applicationContext,
+                    decrementCountUseCase
+                ) as T
             }
         }
     }
