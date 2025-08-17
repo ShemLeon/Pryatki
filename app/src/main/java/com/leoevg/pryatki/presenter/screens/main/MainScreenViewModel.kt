@@ -16,10 +16,8 @@ import kotlinx.coroutines.launch
 
 class MainScreenViewModel(val database: MainDB, private val context: Context): ViewModel() {
     val itemsList = database.dao.getAllItems()
-
     private val _state = mutableStateOf(MainScreenState())
     val state = _state
-
     val newText = mutableStateOf("")
     val errorMessage = mutableStateOf<String?>(null)
     var personEntity: PersonEntity? = null
@@ -28,13 +26,17 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
         // SOLID
         when(event){
             is MainScreenEvent.OnTextChange -> {
-                newText.value = event.text
-                errorMessage.value = null
+                _state.value = _state.value.copy(
+                    inputText = event.text,
+                    errorMessage = null
+                )
             }
             MainScreenEvent.OnAddClick -> insertItem()
             is MainScreenEvent.OnItemClick -> {
-                personEntity = event.item
-                newText.value = event.item.name
+                _state.value = _state.value.copy(
+                    editingItem = event.item,
+                    inputText = event.item.name
+                )
             }
             is MainScreenEvent.OnIncrement -> incrementCount(event.item)
             is MainScreenEvent.OnDecrement -> decrementCount(event.item)
@@ -44,10 +46,11 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
 
     fun insertItem() = viewModelScope.launch {
         val name = newText.value.trim()
-
         // Проверка на пустое имя
         if (name.isEmpty()) {
-            errorMessage.value = "Введи имя!"
+            _state.value = _state.value.copy(
+                errorMessage = "Введи имя!"
+            )
             return@launch
         }
 
@@ -59,7 +62,9 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
             // Проверка на дублирование имени
             val existingCount = database.dao.getCountByName(name)
             if (existingCount > 0) {
-                errorMessage.value = "Персонаж с таким именем уже существует!"
+                _state.value = _state.value.copy(
+                    errorMessage= "Персонаж с таким именем уже существует!"
+                )
                 return@launch
             }
             // Получаем используемые картинки и выбираем оптимальную
@@ -72,7 +77,10 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
                 image = selectedImage
             )
             database.dao.insertItem(newItem)
-            errorMessage.value = null // Сбрасываем ошибку при успешном добавлении
+            _state.value = _state.value.copy(
+                errorMessage = null
+            )
+            // Сбрасываем ошибку при успешном добавлении
         }
         personEntity = null
         newText.value = ""
