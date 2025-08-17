@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 
 class MainScreenViewModel(val database: MainDB, private val context: Context): ViewModel() {
-    val itemsList = database.dao.getAllItems()
+    val personsList = database.dao.getAllPersons()
     private val _state = mutableStateOf(MainScreenState())
     val state = _state
     val newText = mutableStateOf("")

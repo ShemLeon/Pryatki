@@ -49,7 +49,7 @@ fun MainScreen(
         factory = MainScreenViewModel.Factory
     )
 ) {
-    val itemsList = mainScreenViewModel.itemsList.collectAsState(initial = emptyList())
+    val itemsList = mainScreenViewModel.personsList.collectAsState(initial = emptyList())
 
     MainScreenContent(
         items = itemsList.value,
@@ -77,7 +77,6 @@ fun MainScreenContent(
     onDelete: (PersonEntity) -> Unit
 ) {
     val gradientBrush = Brush.verticalGradient(listOf(Indigo500, Violet500))
-
     Box(
         modifier = Modifier
             .fillMaxSize()

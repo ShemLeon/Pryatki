@@ -20,11 +20,17 @@ interface PersonDao {
     suspend fun deleteItem(personEntity: PersonEntity)
 
     @Query("SELECT * FROM name_table")
-    fun getAllItems(): Flow<List<PersonEntity>>
+    fun getAllPersons(): Flow<List<PersonEntity>>
 
     @Query("SELECT COUNT(*) FROM name_table WHERE name = :name")
     suspend fun getCountByName(name: String): Int
 
+    @Query("SELECT * FROM name_table WHERE name = :name LIMIT 1")
+    suspend fun getPersonByName(name: String): PersonEntity?
+
+    // Repository нуждается в этом методе для проверки дублирования имён
     @Query("SELECT DISTINCT image FROM name_table")
     suspend fun getUsedImages(): List<String>
+
+
 }
