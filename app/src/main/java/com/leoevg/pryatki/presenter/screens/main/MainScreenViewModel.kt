@@ -30,6 +30,9 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
                     inputText = event.text,
                     errorMessage = null
                 )
+                // Для совместимости с UI (ВАЖНО!)
+                newText.value = event.text
+                errorMessage.value = null
             }
             MainScreenEvent.OnAddClick -> insertItem()
             is MainScreenEvent.OnItemClick -> {
@@ -37,6 +40,9 @@ class MainScreenViewModel(val database: MainDB, private val context: Context): V
                     editingItem = event.item,
                     inputText = event.item.name
                 )
+                // Для совместимости с UI (ВАЖНО!)
+                personEntity = event.item
+                newText.value = event.item.name
             }
             is MainScreenEvent.OnIncrement -> incrementCount(event.item)
             is MainScreenEvent.OnDecrement -> decrementCount(event.item)
