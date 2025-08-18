@@ -16,7 +16,15 @@ class PersonRepositoryImpl(
     }
 
     override suspend fun deletePerson(person: Person) {
-        dao.deleteItem(person.toPersonEntity())
+        dao.deleteItem(person.toPersonEntity()) // <-- Конвертирует в Entity
+    }
+
+    override suspend fun decrementCount(person: PersonEntity) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun incrementCount(person: PersonEntity) {
+        TODO("Not yet implemented")
     }
 
     override fun getPersons(): Flow<List<Person>> {

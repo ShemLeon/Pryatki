@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 import com.leoevg.pryatki.domain.models.Person
 import com.leoevg.pryatki.domain.usecase.AddPersonUseCase
 import com.leoevg.pryatki.domain.usecase.DecrementCountUseCase
+import com.leoevg.pryatki.domain.usecase.DeletePersonUseCase
 import com.leoevg.pryatki.domain.usecase.IncrementCountUseCase
+import com.leoevg.pryatki.domain.usecase.UpdatePersonUseCase
 
 class MainScreenViewModel(
     val database: MainDB,
@@ -23,7 +25,9 @@ class MainScreenViewModel(
     private val decrementCountUseCase: DecrementCountUseCase,
     private val incrementCountUseCase: IncrementCountUseCase,
     private val addPersonUseCase: AddPersonUseCase,
-): ViewModel() {
+    private val deletePersonUseCase: DeletePersonUseCase,
+    private val updatePersonUseCase: UpdatePersonUseCase
+) : ViewModel() {
     val personsList = database.dao.getAllPersons()
     private val _state = mutableStateOf(MainScreenState())
     val state = _state
@@ -31,9 +35,9 @@ class MainScreenViewModel(
     val errorMessage = mutableStateOf<String?>(null)
     var personEntity: PersonEntity? = null
 
-    fun onEvent(event: MainScreenEvent){
+    fun onEvent(event: MainScreenEvent) {
         // SOLID
-        when(event){
+        when (event) {
             is MainScreenEvent.OnTextChange -> {
                 _state.value = _state.value.copy(
                     inputText = event.text,
@@ -53,53 +57,55 @@ class MainScreenViewModel(
                 personEntity = event.item
                 newText.value = event.item.name
             }
+
             is MainScreenEvent.OnIncrement -> incrementCount(event.item)
             is MainScreenEvent.OnDecrement -> decrementCount(event.item)
             is MainScreenEvent.OnDelete -> deleteItem(event.item)
         }
     }
-
+    // Добавление игрока
     fun insertItem() = viewModelScope.launch {
         val name = newText.value.trim()
-        // Логика редактирования существующего элемента пока остается здесь для простоты
-        if (personEntity != null) {
-            val updatedItem = personEntity!!.copy(name = name)
-            database.dao.updateItem(updatedItem) // Это тоже нужно будет вынести в UseCase
-            personEntity = null
-            newText.value = ""
-            return@launch
-        }
+        val personToEdit = personEntity
 
-        addPersonUseCase.execute(name)
-            .onSuccess {
-            // Успех: сбрасываем поле ввода и ошибку
-            newText.value = ""
-            errorMessage.value = null
-            _state.value = _state.value.copy(errorMessage = null)
+        if (personToEdit != null) {
+            // РЕЖИМ РЕДАКТИРОВАНИЯ
+            updatePersonUseCase.execute(personToEdit.toPerson(), name)
+                .onSuccess {
+                    newText.value = ""
+                    errorMessage.value = null
+                    personEntity = null // Сбрасываем режим редактирования
+                }
+                .onFailure { error ->
+                    errorMessage.value = error.message
+                }
+        } else {
+            // РЕЖИМ ДОБАВЛЕНИЯ
+            addPersonUseCase.execute(name)
+                .onSuccess {
+                    newText.value = ""
+                    errorMessage.value = null
+                }
+                .onFailure { error ->
+                    errorMessage.value = error.message
+                }
         }
-            .onFailure { error ->
-                // Ошибка: показываем сообщение из UseCase
-                errorMessage.value = error.message
-                _state.value = _state.value.copy(errorMessage = error.message)
-            }
-        }
-
-    fun deleteItem(item: PersonEntity) = viewModelScope.launch {
-        database.dao.deleteItem(item)
     }
-
+    // Удаление игрока
+    fun deleteItem(person: PersonEntity) = viewModelScope.launch {
+        deletePersonUseCase.execute(person.toPerson())
+    }
     // Минус в рейтинг
     fun decrementCount(item: PersonEntity) = viewModelScope.launch {
         // Конвертируем Entity в модель домена перед вызовом UseCase
         decrementCountUseCase.execute(item.toPerson())
     }
-
     // Плюс в рейтинг
     fun incrementCount(item: PersonEntity) = viewModelScope.launch {
         incrementCountUseCase.execute(item.toPerson())
     }
 
-// Mapper -
+    // Mapper
     private fun PersonEntity.toPerson(): Person {
         return Person(
             id = this.id,
@@ -108,6 +114,7 @@ class MainScreenViewModel(
             image = this.image
         )
     }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -116,17 +123,21 @@ class MainScreenViewModel(
                 extras: CreationExtras
             ): T {
                 val app = checkNotNull(extras[APPLICATION_KEY]) as App
-                val repository = com.leoevg.pryatki.data.repository.PersonRepositoryImpl(app.database.dao)
+                val repository =
+                    com.leoevg.pryatki.data.repository.PersonRepositoryImpl(app.database.dao)
                 val decrementCountUseCase = DecrementCountUseCase(repository)
                 val incrementCountUseCase = IncrementCountUseCase(repository)
                 val addPersonUseCase = AddPersonUseCase(repository, app.applicationContext)
-
+                val deletePersonUseCase = DeletePersonUseCase(repository)
+                val updatePersonUseCase = UpdatePersonUseCase(repository)
                 return MainScreenViewModel(
                     app.database,
                     app.applicationContext,
                     decrementCountUseCase,
                     incrementCountUseCase,
-                    addPersonUseCase
+                    addPersonUseCase,
+                    deletePersonUseCase,
+                    updatePersonUseCase
                 ) as T
             }
         }

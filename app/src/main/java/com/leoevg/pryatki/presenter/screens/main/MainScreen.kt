@@ -42,6 +42,12 @@ import com.leoevg.pryatki.presenter.ui.components.ListItem
 import com.leoevg.pryatki.presenter.ui.components.NameInputRow
 import com.leoevg.pryatki.presenter.ui.theme.Indigo500
 import com.leoevg.pryatki.presenter.ui.theme.Violet500
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -102,20 +108,23 @@ fun MainScreenContent(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
+            val confirmingId = remember { mutableStateOf<Int?>(null) }
+            val scope = rememberCoroutineScope()
 
             Spacer(modifier = Modifier.height(5.dp))
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = 50.dp)
             ) {
                 items(items, key = { it.id ?: it.hashCode() }) { item ->
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = { value ->
                             if (value == SwipeToDismissBoxValue.EndToStart) {
-                                { onEvent(MainScreenEvent.OnDelete(item)) }; true
-                            } else false
+                                confirmingId.value = item.id
+                                false
+                            } else true
                         }
                     )
 
@@ -147,17 +156,63 @@ fun MainScreenContent(
                             }
                         },
                         content = {
-                            ListItem(
-                                item = item,
-                                onClick = { onEvent(MainScreenEvent.OnItemClick(it)) },
-                                onClickIncrement = { onEvent(MainScreenEvent.OnIncrement(it)) },
-                                onClickDecrement = { onEvent(MainScreenEvent.OnDecrement(it)) }
-                            )
+                            if (confirmingId.value == item.id) {
+                                ConfirmDeleteRow(
+                                    onConfirm = {
+                                        onEvent(MainScreenEvent.OnDelete(item))
+                                        confirmingId.value = null
+                                    },
+                                    onCancel = {
+                                        confirmingId.value = null
+                                        scope.launch { dismissState.reset() }
+                                    }
+                                )
+                            } else {
+                                ListItem(
+                                    item = item,
+                                    onClick = { onEvent(MainScreenEvent.OnItemClick(it)) },
+                                    onClickIncrement = { onEvent(MainScreenEvent.OnIncrement(it)) },
+                                    onClickDecrement = { onEvent(MainScreenEvent.OnDecrement(it)) }
+                                )
+                            }
                         }
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ConfirmDeleteRow(
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Защита от Маши. Удалить?",
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(onClick = onCancel) { Text("Нет") }
+                Button(onClick = onConfirm) { Text("Да") }
+            }
+        }
+
     }
 }
 

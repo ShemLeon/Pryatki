@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -161,7 +162,10 @@ fun ListItem(
 
                     val baseColor = Color(0x66FFFFFF) // ~40% белого
                     val accentBrush = Brush.linearGradient(
-                        colors = listOf(Color.Transparent, Color(0x26FFFFFF)), // лёгкий белый акцент
+                        colors = listOf(
+                            Color.Transparent,
+                            Color(0x26FFFFFF)
+                        ), // лёгкий белый акцент
                         start = Offset.Zero,
                         end = Offset(size.width, size.height)
                     )
