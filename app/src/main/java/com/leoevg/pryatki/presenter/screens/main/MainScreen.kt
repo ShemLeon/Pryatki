@@ -208,8 +208,8 @@ private fun ConfirmDeleteRow(
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onCancel) { Text("Нет") }
-                Button(onClick = onConfirm) { Text("Да") }
+                Button(onClick = onCancel) { Text("Нет") }
+                OutlinedButton(onClick = onConfirm) { Text("Да") }
             }
         }
 

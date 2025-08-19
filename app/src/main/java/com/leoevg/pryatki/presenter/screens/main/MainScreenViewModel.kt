@@ -38,6 +38,7 @@ class MainScreenViewModel(
     fun onEvent(event: MainScreenEvent) {
         // SOLID
         when (event) {
+            // 1. Когда пользователь вводит текст
             is MainScreenEvent.OnTextChange -> {
                 _state.value = _state.value.copy(
                     inputText = event.text,
@@ -47,7 +48,9 @@ class MainScreenViewModel(
                 newText.value = event.text
                 errorMessage.value = null
             }
+            // 2. Когда пользователь нажимает кнопку добавить
             MainScreenEvent.OnAddClick -> insertItem()
+            // 3. Когда пользователь нажимает на элемент
             is MainScreenEvent.OnItemClick -> {
                 _state.value = _state.value.copy(
                     editingItem = event.item,
@@ -57,17 +60,19 @@ class MainScreenViewModel(
                 personEntity = event.item
                 newText.value = event.item.name
             }
-
+            // 4. Когда пользователь нажимает на кнопку минус
             is MainScreenEvent.OnIncrement -> incrementCount(event.item)
+            // 5. Когда пользователь нажимает на кнопку плюс
             is MainScreenEvent.OnDecrement -> decrementCount(event.item)
+            // 6. Когда пользователь нажимает на кнопку удалить
             is MainScreenEvent.OnDelete -> deleteItem(event.item)
         }
     }
+
     // Добавление игрока
     fun insertItem() = viewModelScope.launch {
         val name = newText.value.trim()
         val personToEdit = personEntity
-
         if (personToEdit != null) {
             // РЕЖИМ РЕДАКТИРОВАНИЯ
             updatePersonUseCase.execute(personToEdit.toPerson(), name)
@@ -91,15 +96,18 @@ class MainScreenViewModel(
                 }
         }
     }
+
     // Удаление игрока
     fun deleteItem(person: PersonEntity) = viewModelScope.launch {
         deletePersonUseCase.execute(person.toPerson())
     }
+
     // Минус в рейтинг
     fun decrementCount(item: PersonEntity) = viewModelScope.launch {
         // Конвертируем Entity в модель домена перед вызовом UseCase
         decrementCountUseCase.execute(item.toPerson())
     }
+
     // Плюс в рейтинг
     fun incrementCount(item: PersonEntity) = viewModelScope.launch {
         incrementCountUseCase.execute(item.toPerson())
