@@ -1,7 +1,7 @@
 package com.leoevg.pryatki.data.repository
 
-import com.leoevg.pryatki.data.PersonDao
-import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.data.storage.PersonDao
+import com.leoevg.pryatki.data.storage.PersonEntity
 import com.leoevg.pryatki.domain.models.Person
 import com.leoevg.pryatki.domain.repository.PersonRepository
 import kotlinx.coroutines.flow.Flow

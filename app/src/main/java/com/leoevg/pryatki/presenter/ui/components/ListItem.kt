@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.leoevg.pryatki.R
-import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.data.storage.PersonEntity
 import com.leoevg.pryatki.presenter.ui.theme.CardGlass
 import com.leoevg.pryatki.presenter.ui.theme.MinusBg
 import com.leoevg.pryatki.presenter.ui.theme.OnAccent

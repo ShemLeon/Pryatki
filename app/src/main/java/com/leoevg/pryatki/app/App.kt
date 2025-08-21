@@ -1,7 +1,7 @@
 package com.leoevg.pryatki.app
 
 import android.app.Application
-import com.leoevg.pryatki.data.MainDB
+import com.leoevg.pryatki.data.storage.MainDB
 
 import kotlin.getValue
 

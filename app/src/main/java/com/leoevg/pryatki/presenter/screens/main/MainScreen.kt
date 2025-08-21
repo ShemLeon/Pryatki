@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leoevg.pryatki.R
-import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.data.storage.PersonEntity
 import com.leoevg.pryatki.presenter.ui.components.ListItem
 import com.leoevg.pryatki.presenter.ui.components.NameInputRow
 import com.leoevg.pryatki.presenter.ui.theme.Indigo500

@@ -1,6 +1,6 @@
 package com.leoevg.pryatki.presenter.screens.main
 
-import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.data.storage.PersonEntity
 
 sealed interface MainScreenEvent {
     data class OnTextChange(val text: String): MainScreenEvent

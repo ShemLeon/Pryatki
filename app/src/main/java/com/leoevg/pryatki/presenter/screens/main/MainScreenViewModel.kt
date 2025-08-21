@@ -3,13 +3,13 @@ package com.leoevg.pryatki.presenter.screens.main
 import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.leoevg.pryatki.data.MainDB
+import com.leoevg.pryatki.data.storage.MainDB
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.leoevg.pryatki.app.App
-import com.leoevg.pryatki.data.PersonEntity
+import com.leoevg.pryatki.data.storage.PersonEntity
 import com.leoevg.pryatki.utils.ImageUtils
 import kotlinx.coroutines.launch
 import com.leoevg.pryatki.domain.models.Person

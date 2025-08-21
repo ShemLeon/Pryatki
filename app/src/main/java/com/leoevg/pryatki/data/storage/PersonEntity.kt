@@ -1,4 +1,4 @@
-package com.leoevg.pryatki.data
+package com.leoevg.pryatki.data.storage
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
